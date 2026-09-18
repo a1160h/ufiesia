@@ -613,10 +613,6 @@ class BaseLayer:
         for typeid, names in cls.category_names.items():
             cls.categories[typeid] = tuple(namespace[name] for name in names)
 
-
-        # super().__init_subclass__(**kwargs)  # nucleus側導入までは保留
-
-
     def __init__(self, **kwargs):
         print('Initialize', self.__class__.__name__, self.config)
         self.matmul       = kwargs.pop('matmul',          False) # MatMulLinearを使う 
