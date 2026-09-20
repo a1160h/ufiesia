@@ -2,7 +2,6 @@
 # Base functions for seq2seq and each seq2seq is defined
 # 20251030 A.Inoue
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 from ufiesia import RNN
 from ufiesia import LossFunctions

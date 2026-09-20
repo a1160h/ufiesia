@@ -1,5 +1,4 @@
 from ufiesia.Config import *
-np = Config.np
 set_derivative(True)
 from ufiesia import Neuron 
 from ufiesia import stems_blocks_heads as sbh

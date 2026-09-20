@@ -2,7 +2,6 @@
 # 2026.06.16 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 import copy
 
 #### 最適化関数の共通機能 ############################################

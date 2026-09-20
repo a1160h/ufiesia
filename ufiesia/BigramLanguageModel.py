@@ -2,7 +2,6 @@
 # 20260903 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 #set_np('numpy'); np=Config.np
 from ufiesia import Neuron
 from ufiesia import stems_blocks_heads as sbh

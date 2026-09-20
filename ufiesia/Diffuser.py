@@ -12,7 +12,6 @@
 #     sample_state
 
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Functions as F
 from ufiesia import LossFunctions as lf
 from pathlib import Path

@@ -1,7 +1,6 @@
 # LossFunctions
-# 2026.09.11 A.Inoue
+# 2026.09.20 A.Inoue
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Functions as F
 import math, warnings
 
@@ -15,6 +14,7 @@ class LossFunctionBase:
         sample   : return E_x [ ℓ(x) ] (sample-level objective)
 
         """
+        pass  # Function.__init__ is not needed in ufiesia
         self.reduction = reduction
         self.t = None
         self.l_shape = None
@@ -220,6 +220,7 @@ class CrossEntropyErrorForLogits(LossFunctionBase):
 class MeanStdDeviation:
     """ 平均と標準偏差をtargetに近づくようにする関数 """
     def __init__(self, mean=2.0, std=0.2, beta1=0, beta2=0, axis=-1):
+        pass  # Function.__init__ is not needed in ufiesia
         self.mean = F.Mean(axis=axis)
         self.std  = F.Std(axis=axis)
         self.loss_func1 = MeanSquaredError()
@@ -248,6 +249,7 @@ class MeanStdDeviation:
 class PairwiseGap:
     """ 末尾の軸のデータの並びの中の各ペアの差分をgapに近づける損失関数 """
     def __init__(self, gap=0.1, beta=1.0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.target_gap = gap
         self.beta = beta
 
@@ -258,7 +260,7 @@ class PairwiseGap:
         self.diffs = d
 
         if gap is not None: # forwardの際に指定した場合
-            self.gap = gap
+            self.target_gap = gap
 
         # マスク：対角成分を無視（== 0）
         eye = np.eye(n, dtype=bool)
@@ -288,6 +290,7 @@ class PairwiseGap:
 class PairwiseGap_bkup:
     """ 複数要素の中の各ペアの差分をgapに近づける損失関数 """
     def __init__(self, gap=0.1, beta=0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.target_gap = gap
         self.beta = beta
 

@@ -1,5 +1,4 @@
 from ufiesia.Config import *
-np = Config.np
 import matplotlib.pyplot as plt 
 from ufiesia import sklearn_datasets
 

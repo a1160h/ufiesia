@@ -2,7 +2,6 @@
 # 2026.06.03 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 #set_np('numpy');set_seed(1); np = Config.np
 
 class BaseInitializer:

@@ -1,9 +1,7 @@
 # Functions 順伝播逆伝播双方に対応した関数
-# 20260916 A.Inoue
+# 20260920 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
-import copy
 from functools import reduce
 import itertools
 
@@ -20,6 +18,7 @@ def assign(x):
 class Branch:
     """ 下流へ分岐する際に、下流からの勾配を順に受け取り加算する """
     def __init__(self):
+        pass  # Function.__init__ is not needed in ufiesia
         self.gx = None
         
     def forward(self, x):
@@ -30,7 +29,7 @@ class Branch:
         x = self.x
         if self.gx is None or flush: 
             self.gx = np.zeros_like(x)
-        self.gx += assign(gy)     
+        self.gx += gy             
         return self.gx
     
 def bracch(x):
@@ -48,6 +47,7 @@ def neg(x):
 
 class Pow:
     def __init__(self, c=1):
+        pass  # Function.__init__ is not needed in ufiesia
         self.c = c
         
     def forward(self, x):
@@ -90,11 +90,12 @@ class Sqrt:
         return gx
     
 def sqrt(x):
-    return SquareRoot()(x)
+    return Sqrt().forward(x)
 
 class Exp:
     """ 指数関数(底を指定可能) """
     def __init__(self, a=None):
+        pass  # Function.__init__ is not needed in ufiesia
         if a is None:          # 底がネイピア数eの場合
             log_of_base = 1          
         else:                  # 底が指定された場合　
@@ -118,6 +119,7 @@ def exp(x, a=None):
 class Log:
     """ 対数関数(底を指定可能) """
     def __init__(self, a=None):
+        pass  # Function.__init__ is not needed in ufiesia
         if a is None:          # 自然対数
             log_of_base = 1
         elif a > 0 and a != 1: # 対数の底が指定された場合
@@ -228,8 +230,8 @@ class Add:
         x0, x1 = self.x0, self.x1
         y_shape = self.y_shape
         x0_shape, x1_shape = np.shape(x0), np.shape(x1)
-        gx0 = assign(gy) if y_shape==x0_shape else SumTo(x0_shape).forward(gy)
-        gx1 = assign(gy) if y_shape==x1_shape else SumTo(x1_shape).forward(gy)
+        gx0 = gy if y_shape==x0_shape else SumTo(x0_shape).forward(gy)
+        gx1 = gy if y_shape==x1_shape else SumTo(x1_shape).forward(gy)
         return gx0, gx1
 
 def add(x0, x1):
@@ -246,7 +248,7 @@ class Sub:
         x0, x1 = self.x0, self.x1
         y_shape = self.y_shape
         x0_shape, x1_shape = np.shape(x0), np.shape(x1)
-        gx0 =  assign(gy) if y_shape==x0_shape else SumTo(x0_shape).forward(gy)
+        gx0 =  gy         if y_shape==x0_shape else SumTo(x0_shape).forward(gy)
         gx1 = -gy         if y_shape==x1_shape else SumTo(x1_shape).forward(-gy)
         return gx0, gx1
 
@@ -301,6 +303,7 @@ def rdiv(x0, x1):
 
 class SumTo:
     def __init__(self, shape=()):
+        pass  # Function.__init__ is not needed in ufiesia
         self.shape = shape
         self.gy_shape = None
 
@@ -343,6 +346,7 @@ def sum_to(x, shape):
 
 class BroadcastTo:
     def __init__(self, shape=()):
+        pass  # Function.__init__ is not needed in ufiesia
         self.shape = shape
 
     def forward(self, x):
@@ -361,6 +365,7 @@ def broadcast_to(x, shape):
 class SumMeanVar:
     """ 配列操作を担う共通クラス """
     def __init__(self, axis=None, dtype=None, out=None, keepdims=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.keepdims = keepdims
         self.axis = axis
         self.n = None
@@ -549,10 +554,10 @@ class VariadicBase:
         elif len(xs)==1 and all(isinstance(x, (tuple, list)) for x in xs):
             xs, = xs
             y = self.func.forward(*xs)
-            self.pcked_in_one =True
+            self.packed_in_one = True
             
         elif len(xs)==1 and all(isinstance(x, type((i for i in []))) for x in xs):
-            y = self.func.forward(tuple(xs[0]))
+            y = self.func.forward(*tuple(xs[0]))
             self.packed_in_one = True
         else:
             raise Exception('Non-compliant input data.')
@@ -588,6 +593,7 @@ def sum_variadic(*xs):
 class MaxMin:
     """ MaxとMinの共通ベース """
     def __init__(self, axis=None, keepdims=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.keepdims = keepdims
 
@@ -632,6 +638,7 @@ class Min(MaxMin):
 class GetItem:
     """ 要素を添字指定により部分取り出しする """
     def __init__(self, slices):
+        pass  # Function.__init__ is not needed in ufiesia
         self.slices = slices
 
     def forward(self, x):
@@ -659,6 +666,7 @@ class TopKprimitive:
 
     """
     def __init__(self, k, axis=-1):
+        pass  # Function.__init__ is not needed in ufiesia
         if k < 1:
             raise ValueError(f"k must be at least 1, but got {k}")
         self.k = k
@@ -715,6 +723,7 @@ def top_k(x, k, axis=-1):
 
 class Transpose_bkup:
     def __init__(self, axes=(1, 0)): # numpyのおかしな挙動に対応20241122
+        pass  # Function.__init__ is not needed in ufiesia
         if len(axes)==1:
             self.axes, = axes
         else:    
@@ -731,6 +740,7 @@ class Transpose_bkup:
 
 class Transpose:
     def __init__(self, *axes): # axesがタプルでなくても対応
+        pass  # Function.__init__ is not needed in ufiesia
         #print('###', axes)
         if axes is None:
             self.axes = (1, 0)
@@ -758,6 +768,7 @@ def transpose_bkup(x, axes=(1, 0)):
 
 class Reshape_bkup:
     def __init__(self, *shape):
+        pass  # Function.__init__ is not needed in ufiesia
         if len(shape) > 1:
             self.shape = shape
         else:
@@ -775,6 +786,7 @@ class Reshape_bkup:
 
 class Reshape:
     def __init__(self, *shape):
+        pass  # Function.__init__ is not needed in ufiesia
 
         # 正規化：常に tuple[int,...] にする
         if len(shape) == 1 and isinstance(shape[0], (tuple, list)):
@@ -830,6 +842,7 @@ def matmul(x0, x1):
 class DotLinear:
     """ ニューラルネットワークで使う基本の重み付け和 """
     def __init__(self, bias=True):
+        pass  # Function.__init__ is not needed in ufiesia
         self.bias = bias
         
     def forward(self, x, w, b):
@@ -888,6 +901,7 @@ class HadamardLinear:
 class MatMulLinear:
     """ ニューラルネットワークで使う時系列データなど入力次元数3の重み付け和 """
     def __init__(self, bias=True):
+        pass  # Function.__init__ is not needed in ufiesia
         self.bias = bias
         
     def forward(self, x, w, b):
@@ -914,6 +928,7 @@ class MatMulLinear:
 class MatMulLinear_bkup:
     """ ニューラルネットワークで使う時系列データなど入力次元数大の重み付け和 """
     def __init__(self, bias=True):
+        pass  # Function.__init__ is not needed in ufiesia
         self.bias = bias
         
     def forward(self, x, w, b):
@@ -938,6 +953,7 @@ class MatMulLinear_bkup:
 class DualDotLinear:
     """ ニューラルネットワークで使う２重の重み付け和 """
     def __init__(self, bias=True):
+        pass  # Function.__init__ is not needed in ufiesia
         self.bias = bias
         
     def forward(self, x, r, w, v, b):
@@ -962,6 +978,7 @@ class DualDotLinear:
 class ScaleDotLinear:
     """ ニューラルネットワークで使う基本の重み付け和、ReParameterization対応 """
     def __init__(self, matmul=False, bias=True, scale=False, eps=1e-8):
+        pass  # Function.__init__ is not needed in ufiesia
         self.matmul = matmul 
         self.bias = bias
         self.scale = scale
@@ -1022,6 +1039,7 @@ class Flatten:
 class Normalize:
     """ 平均0標準偏差1にする標準化(正規化の一種) """
     def __init__(self, axis=None, eps=1e-12):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.eps = eps
         self.sigma = None
@@ -1065,6 +1083,7 @@ class Normalize:
 class NormalizeSimple:
     """ 平均0標準偏差1にする標準化(正規化の一種) """
     def __init__(self, axis=None, eps=1e-12):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.eps = eps
     
@@ -1099,6 +1118,7 @@ class NormalizeSimple:
 class Normalize_bkup:
     """ 平均0標準偏差1にする標準化(正規化の一種) """
     def __init__(self, axis=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.mean = Mean(axis, keepdims=True)
         self.std  = Std(axis, keepdims=True)
         self.sub  = Sub()
@@ -1126,6 +1146,7 @@ class Standardize(Normalize):
 class L2Normalize:
     """ L2ノーマライゼーション """
     def __init__(self, axis=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.root_sum_square = RootSumSquare(axis=axis, keepdims=True)
         self.div = Div()
     
@@ -1143,6 +1164,7 @@ class L2Normalize:
 class Normalize_bkup:
     """ 平均0標準偏差1にする標準化(正規化の一種) """
     def __init__(self, axis=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         
     def forward(self, x):
@@ -1155,7 +1177,7 @@ class Normalize_bkup:
         self.y = y
         return y
     
-    def backward(self, gy=1):
+    def backward(self, gy):
         istd = 1/self.std
         iN = self.mu.size / self.x.size # muおよびstdを求める際に畳んだ大きさ
         xc = self.x - self.mu
@@ -1168,6 +1190,7 @@ class Normalize_bkup:
 class L2Normalize_bkup:
     """ L2ノーマライゼーション """
     def __init__(self, axis=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
     
     def forward(self, x):
@@ -1178,7 +1201,7 @@ class L2Normalize_bkup:
         self.l2n = l2n
         return y
    
-    def backward(self, gy=1):
+    def backward(self, gy):
         x = self.x
         l2n = self.l2n
         gx = gy * (1 - x * x.sum(axis=self.axis, keepdims=True) / l2n**2) / l2n
@@ -1188,6 +1211,7 @@ class L2Normalize_bkup:
 class Concatenate:
     """ 複数の入力を、既存の指定軸に沿って結合する """
     def __init__(self, axis=0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
 
     def forward(self, *xs):
@@ -1224,6 +1248,7 @@ def ecat(*xs, axis=0):
 class Split:
     """入力を、指定軸に沿って複数に分割する"""
     def __init__(self, indices_or_sections, axis=0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.indices_or_sections = indices_or_sections
         self.axis = axis
 
@@ -1240,6 +1265,7 @@ def split(x, indices_or_sections, axis=0):
 class Stack:
     """ 複数の同形状入力を、新しい指定軸に沿って積み重ねる """
     def __init__(self, axis=0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
 
     def forward(self, *xs):
@@ -1255,6 +1281,7 @@ def stack(xs, axis=0):
 class Unstack:
     """ 入力を指定軸に沿って分解し、その軸を除いた複数の出力を返す """
     def __init__(self, axis=0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
 
     def forward(self, x):
@@ -1301,6 +1328,7 @@ class TakeAlongAxis:
     要注意：axis=Noneの場合、xを一次元化して処理
     """
     def __init__(self, indices, axis=-1):
+        pass  # Function.__init__ is not needed in ufiesia
         self.indices = np.asarray(indices)
         self.axis = axis
 
@@ -1334,6 +1362,7 @@ class ScatterAddAlongAxis:
     要注意：整数axisのみを扱う
     """
     def __init__(self, indices, output_shape, axis=-1):
+        pass  # Function.__init__ is not needed in ufiesia
         self.indices = np.asarray(indices)
         self.output_shape = tuple(output_shape)
         self.axis = axis
@@ -1388,6 +1417,7 @@ def scatter_add_along_axis(x, indices, output_shape, axis=-1):
 ############################################
 class Tile:
     def __init__(self, reps):
+        pass  # Function.__init__ is not needed in ufiesia
         self.reps = reps  # 繰り返し数を指定するタプルまたは整数。
         self.x_ndim = None
         self.x_shape = None
@@ -1412,6 +1442,7 @@ def tile(x, reps):
 class Pairwise:
     """ 指定された軸に従ってペアを作る（自己ペアのマスクも可能）"""
     def __init__(self, axis=-1, broadcast=True, diagonal_mask=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.broadcast = broadcast
         self.mask = diagonal_mask
@@ -1455,6 +1486,7 @@ class Pairwise:
 class Pairwise_bkup:
     """ 指定された軸に従ってペアを作る """
     def __init__(self, axis=-1, broadcast=True, diagonal_mask=True):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis # 後ろ(-1)から数えてペアを作る軸を指定
         self.broadcast = broadcast
         self.mask = diagonal_mask
@@ -1466,14 +1498,14 @@ class Pairwise_bkup:
             p, q = np.broadcast_arrays(p, q)
         if self.mask:
             self.ne = ~np.eye(x.shape[self.axis], dtype=bool)
-            p *= self.ne
-            q *= self.ne
+            p = p * self.ne
+            q = q * self.ne
         return p, q
 
     def backward(self, gp, gq):
         if self.mask:
-            gp *= self.ne
-            gq *= self.ne
+            gp = gp * self.ne
+            gq = gq * self.ne
         gxp = np.sum(gp, axis=self.axis)
         gxq = np.sum(gq, axis=self.axis-1)
         gx = gxp + gxq
@@ -1481,6 +1513,7 @@ class Pairwise_bkup:
 
 class UpperTriangle:
     def __init__(self, k=0):
+        pass  # Function.__init__ is not needed in ufiesia
         """ 末尾2軸の正方行列の上三角行列 """
         self.k = k       # 対角線からのオフセット
         self.mask = None # 
@@ -1505,6 +1538,7 @@ class UpperTriangle:
 
 class Take:
     def __init__(self, axis, indices):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.indices = np.array(indices)
 
@@ -1532,6 +1566,7 @@ class Take:
 class Permutations:
     " 多次元配列からaxisの指定する軸で順列を作る "
     def __init__(self, axis, n=None, r=2):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.r = r
         self.take = None
@@ -1553,6 +1588,7 @@ class Permutations:
 class Combinations:
     " 多次元配列からaxisの指定する軸で組合せを作る "
     def __init__(self, axis, n=None, r=2):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.r = r
         self.take = None
@@ -1574,6 +1610,7 @@ class Combinations:
 class TakePair:
     " 多次元配列からaxisの指定する軸で順列組合わせのペアを作る "
     def __init__(self, axis, method='permutation', n=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis # 仮設定しfix_configurationで正規化して再設定　
         self.method = method
         self.take = None
@@ -1608,6 +1645,7 @@ class TakePair:
 class TakePair2:
     " 多次元配列からaxisの指定する軸で順列組合わせのペアを作る "
     def __init__(self, axis, method='permutation', n=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis # 仮設定しfix_configurationで正規化して再設定
         self.method = method
         self.take1 = None
@@ -1645,6 +1683,7 @@ class TakePair2:
 
 class Step:
     def __init__(self, c=0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.c = c
         
     def forward(self, x):
@@ -1690,6 +1729,7 @@ def less_than_or_equal(x0, x1):
 
 class Argmax:
     def __init__(self, axis=None, keepdims=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.keepdims = keepdims
 
@@ -1698,6 +1738,7 @@ class Argmax:
 
 class Argmin:
     def __init__(self, axis=None, keepdims=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.keepdims = keepdims
 
@@ -1706,6 +1747,7 @@ class Argmin:
 
 class Argsort:
     def __init__(self, axis=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
 
     def forward(self, x):
@@ -1753,6 +1795,7 @@ class Softmax:
         sumgx = np.sum(gx, axis=-1, keepdims=True)
         gx -= y * sumgx
         return gx
+
 
 #######################################################
 # HDArray OperatorOverload は nucleus 固有のため ufiesia では持たない

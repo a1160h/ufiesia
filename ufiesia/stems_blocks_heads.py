@@ -2,7 +2,6 @@
 # 20260911 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Neuron as nn
 from ufiesia import Functions as F
 from ufiesia import Activators as A
@@ -40,6 +39,7 @@ class TransformerBlock:
     def __init__(self, emb_dim=64, n_head=4, causality=None, proj=False,
                  expansion=4, rms=False, activate='Mish',
                  chunk_size=None, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.sa = nn.MultiHeadSelfAttention(
             emb_dim, emb_dim//n_head, n_head, causality=causality, chunk_size=chunk_size,
             **kwargs) # entropy制御はkwargsで指定
@@ -132,6 +132,7 @@ class ConvBlock:
     def __init__(self, out_ch, stride=1, proj=False, 
                  residual=False, attention=False, pre_activation=False, 
                  **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         print('__init__', self.__class__.__name__, out_ch, stride, kwargs)
         self.out_ch = out_ch
         # Conv 本体（非bottleneck 構造）
@@ -241,6 +242,7 @@ class ConvBlockBottleneck(ConvBlock):
     def __init__(self, out_ch, stride=1, proj=False, bottleneck_ratio=0.5, min_mid_ch=16,
                  residual=False, attention=False, pre_activation=False,
                  **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         print('__init__', self.__class__.__name__, out_ch,
               proj, bottleneck_ratio, min_mid_ch, kwargs)
         self.out_ch = out_ch

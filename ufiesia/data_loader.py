@@ -2,7 +2,6 @@
 # 2026.06.11 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 #set_np('numpy'); np = Config.np
 from concurrent.futures import ThreadPoolExecutor
 import threading

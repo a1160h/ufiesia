@@ -1,7 +1,6 @@
 # VAE 各種
 # 20260426 A.Inoue　
 from ufiesia.Config import *
-np = Config.np
 import matplotlib.pyplot as plt
 from ufiesia import Neuron as neuron
 from ufiesia import common_function as cf

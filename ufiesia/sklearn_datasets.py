@@ -1,7 +1,6 @@
 import matplotlib.pyplot as plt 
 import random
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 from sklearn import datasets
 

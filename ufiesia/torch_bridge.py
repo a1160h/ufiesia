@@ -2,7 +2,6 @@
 # 20250818 井上
 
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 import re
 import torch

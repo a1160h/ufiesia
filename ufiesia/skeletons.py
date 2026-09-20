@@ -2,7 +2,6 @@
 # 20260623 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Neuron as nn
 
 class PredictionSkeleton:

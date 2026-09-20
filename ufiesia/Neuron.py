@@ -1,11 +1,10 @@
 # Neuron
-# 20260918 A.Inoue
+# 20260920 A.Inoue
 
 import copy
 import warnings
 import math
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Activators
 from ufiesia import Optimizers
 from ufiesia import common_function as cf
@@ -274,6 +273,7 @@ class Sequential2:
 class Parameter:
     """ 学習可能な簡易パラメタ """
     def __init__(self, *size, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.size = size
         optimize = kwargs.pop('optimize', 'SGD') 
         self.w, self.grad_w = None, None
@@ -421,6 +421,7 @@ class WeightsAndBiases:
 class LinearLayer:
     """ ニューロンの基本機能(Pytorch互換機能提供) """
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         if   len(configuration) == 2:
             m, n = configuration
         elif len(configuration) == 1:
@@ -614,6 +615,7 @@ class BaseLayer:
             cls.categories[typeid] = tuple(namespace[name] for name in names)
 
     def __init__(self, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__, self.config)
         self.matmul       = kwargs.pop('matmul',          False) # MatMulLinearを使う 
         self.bias         = kwargs.get('bias',             True) # dot_linearのbias有無
@@ -764,6 +766,7 @@ class BaseLayer:
     
 class PrePhase:
     def __init__(self, layer=None, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         #print(self.__class__.__name__, 'layer =', layer, 'kwargs =', kwargs)
         self.layer      = layer
         batchnorm       = kwargs.pop('batchnorm',  False) # バッチ正規化の適用有無
@@ -823,6 +826,7 @@ class PrePhase:
 
 class PostPhase:  
     def __init__(self, layer=None, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         #print(self.__class__.__name__, 'layer =', layer, 'kwargs =', kwargs)
         activate          = kwargs.pop('activate',    None) # Post-activation
         dropout           = kwargs.pop('dropout',    False) # ドロップアウト可否(forwardで指定)
@@ -1380,6 +1384,7 @@ class Pooling1dLayer:
     # pool:プーリング領域のサイズ, pad:パディング幅
     # C:出力チャンネル数, Ow:出力幅
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         C, Iw, pool, pad, method, Ow = None, None, 2, 0, None, None
         if len(configuration) == 5:
             C, Iw, pool, pad, method = configuration
@@ -1420,8 +1425,8 @@ class Pooling1dLayer:
             self.fix_configuration(x.shape)
         C, Iw, pool, pad, Ow = self.config
         #B = x.size // (C*Ih*Iw)
-        x = x.reshape(-1, C, Iw)                     # 入力の形状 ex. (C, Iw)に対応   
-        pdw = Ow * pool - Iw - pad                   # サイズの端数に対応
+        x = x.reshape(-1, C, Iw)               # 入力の形状 ex. (C, Iw)に対応   
+        pdw = Ow * pool - Iw - pad             # サイズの端数に対応
         # 画像調整            B      C      Iw左 Iw右　ゼロパディング   
         img_pad = np.pad(x, [(0,0), (0,0), (pad, pdw)], 'constant')
         y, self.max_index = self.pooling(img_pad)
@@ -1431,13 +1436,13 @@ class Pooling1dLayer:
 
     def backward(self, grad_y):
         C, Iw, pool, pad, Ow = self.config  
-        B = grad_y.size // (C*Ow)                    # B = grad_y.shape[0] = len(grad_y)
-        self.grad_y = grad_y.reshape(B, C, Ow) #ドロップアウトへの入力形状は順伝播時と同じ
+        B = grad_y.size // (C*Ow)              # B = grad_y.shape[0] = len(grad_y)
+        grad_y = grad_y.reshape(B, C, Ow)      #ドロップアウトへの入力形状は順伝播時と同じ
         if self.DO:
-            self.grad_y = self.DO.backward(self.grad_y)  # ドロップアウト
-        grad_x = self.unpooling(self.grad_y, self.max_index)
+            grad_y = self.DO.backward(grad_y)  # ドロップアウト
+        grad_x = self.unpooling(grad_y, self.max_index)
         # 画像調整 トリミング
-        grad_x = grad_x[:, :, pad:pad+Iw]            # grad_x.shape=(B,C,Iw) 
+        grad_x = grad_x[:, :, pad:pad+Iw]      # grad_x.shape=(B,C,Iw) 
         grad_x = grad_x.reshape(self.x.shape)
         return grad_x
 
@@ -1447,6 +1452,7 @@ class UnPooling1dLayer:
     # pool:プーリング領域のサイズ, pad:パディング幅
     # C:出力チャンネル数, Ow:出力幅
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         C, Iw, pool, pad, method, Ow = None, None, 2, 0, None, None
         if len(configuration) == 5:
             C, Iw, pool, pad, method = configuration
@@ -1487,22 +1493,22 @@ class UnPooling1dLayer:
             self.fix_configuration(x.shape)
         C, Iw, pool, pad, Ow = self.config
         #B = x.size // (C*Iw)
-        x = x.reshape(-1, C, Iw)                     # 入力の形状 ex. (C,Ih*Iw)に対応   
+        x = x.reshape(-1, C, Iw)               # 入力の形状 ex. (C,Ih*Iw)に対応   
         #print('img_pad', img_pad.shape, self.config)
         y = self.unpooling(x, max_index)
         # 画像調整 トリミング
-        y = y[:, :, pad:pad+Ow]                      # y.shape=(B,C,Oh,Ow) 
+        y = y[:, :, pad:pad+Ow]                # y.shape=(B,C,Oh,Ow) 
         if self.DO:
             y = self.DO.forward(y, dropout=dropout)  # 形状は(B,C,Oh,Ow)
         return y
 
     def backward(self, grad_y):
-        C, Iw, pool, pad, Ow = self.config   # パラメタ
-        B = grad_y.size // (C*Ow)                    # B = grad_y.shape[0] = len(grad_y)
-        grad_y = grad_y.reshape(B, C, Ow)    # ドロップアウトへの入力形状は順伝播時と同じ
+        C, Iw, pool, pad, Ow = self.config     # パラメタ
+        B = grad_y.size // (C*Ow)              # B = grad_y.shape[0] = len(grad_y)
+        grad_y = grad_y.reshape(B, C, Ow)      # ドロップアウトへの入力形状は順伝播時と同じ
         if self.DO:
-            self.grad_y = self.DO.backward(self.grad_y)  # ドロップアウト
-        pdw = Iw*pool - Ow - pad                     # 画像サイズの端数を調整
+            grad_y = self.DO.backward(grad_y)  # ドロップアウト
+        pdw = Iw*pool - Ow - pad               # 画像サイズの端数を調整
         # 画像調整                 B      C     Iw左 Iw右　 ゼロパディング   
         grad_y = np.pad(grad_y, [(0,0), (0,0), (pad, pdw)], 'constant')
         grad_x, _ = self.pooling(grad_y)
@@ -1554,6 +1560,7 @@ class Pooling2dLayer:
     # pool:プーリング領域のサイズ, pad:パディング幅
     # C:出力チャンネル数, Oh:出力高さ, Ow:出力幅
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         C, image_size, pool, pad, method, Oh, Ow = None, None, 2, 0, None, None, None
         if len(configuration) == 5:
             C, image_size, pool, pad, method = configuration
@@ -1604,9 +1611,9 @@ class Pooling2dLayer:
             self.fix_configuration(x.shape)
         C, Ih, Iw, pool_h, pool_w, pad, Oh, Ow = self.config
         #B = x.size // (C*Ih*Iw)
-        x = x.reshape(-1, C, Ih, Iw)                 # 入力の形状 ex. (C,Ih*Iw)に対応   
-        pdh = Oh * pool_h - Ih - pad                 # 画像サイズの端数に対応
-        pdw = Ow * pool_w - Iw - pad                 # 画像サイズの端数に対応
+        x = x.reshape(-1, C, Ih, Iw)           # 入力の形状 ex. (C,Ih*Iw)に対応   
+        pdh = Oh * pool_h - Ih - pad           # 画像サイズの端数に対応
+        pdw = Ow * pool_w - Iw - pad           # 画像サイズの端数に対応
         # 画像調整            B      C     Ih上　Ih下   Iw左 Iw右　ゼロパディング   
         img_pad = np.pad(x, [(0,0), (0,0), (pad, pdh), (pad, pdw)], 'constant')
         y, self.max_index = self.pooling(img_pad)
@@ -1616,12 +1623,11 @@ class Pooling2dLayer:
 
     def backward(self, grad_y):
         C, Ih, Iw, pool_h, pool_w, pad, Oh, Ow = self.config   # パラメタ
-        B = grad_y.size // (C*Oh*Ow)                 # B = grad_y.shape[0] = len(grad_y)
-        self.grad_y = grad_y.reshape(B, C, Oh, Ow)
-                                             # ドロップアウトへの入力形状は順伝播時と同じ
+        B = grad_y.size // (C*Oh*Ow)           # B = grad_y.shape[0] = len(grad_y)
+        grad_y = grad_y.reshape(B, C, Oh, Ow)  # ドロップアウトへの入力形状は順伝播時と同じ
         if self.DO:
-            self.grad_y = self.DO.backward(self.grad_y)  # ドロップアウト
-        grad_x = self.unpooling(self.grad_y, self.max_index)
+            grad_y = self.DO.backward(grad_y)  # ドロップアウト
+        grad_x = self.unpooling(grad_y, self.max_index)
         # 画像調整 トリミング
         grad_x = grad_x[:, :, pad:pad+Ih, pad:pad+Iw] # grad_x.shape=(B,C,Ih,Iw) 
         grad_x = grad_x.reshape(self.x.shape)
@@ -1636,6 +1642,7 @@ class UnPooling2dLayer:
     # pool:プーリング領域のサイズ, pad:パディング幅
     # C:出力チャンネル数, Oh:出力高さ, Ow:出力幅
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         C, image_size, pool, pad, method, Oh, Ow = None, None, 2, 0, None, None, None
         if len(configuration) == 5:
             C, image_size, pool, pad, method = configuration
@@ -1686,24 +1693,23 @@ class UnPooling2dLayer:
             self.fix_configuration(x.shape)
         C, Ih, Iw, pool_h, pool_w, pad, Oh, Ow = self.config
         #B = x.size // (C*Ih*Iw)
-        x = x.reshape(-1, C, Ih, Iw)                 # 入力の形状 ex. (C,Ih*Iw)に対応   
+        x = x.reshape(-1, C, Ih, Iw)           # 入力の形状 ex. (C,Ih*Iw)に対応   
         #print('img_pad', img_pad.shape, self.config)
         y = self.unpooling(x, max_index)
         # 画像調整 トリミング
-        y = y[:, :, pad:pad+Oh, pad:pad+Ow]          # y.shape=(B,C,Oh,Ow) 
+        y = y[:, :, pad:pad+Oh, pad:pad+Ow]    # y.shape=(B,C,Oh,Ow) 
         if self.DO:
             y = self.DO.forward(y, dropout=dropout)  # 形状は(B,C,Oh,Ow)
         return y
 
     def backward(self, grad_y):
         C, Ih, Iw, pool_h, pool_w, pad, Oh, Ow = self.config   # パラメタ
-        B = grad_y.size // (C*Oh*Ow)                 # B = grad_y.shape[0] = len(grad_y)
-        grad_y = grad_y.reshape(B, C, Oh, Ow)
-                                            # ドロップアウトへの入力形状は順伝播時と同じ
+        B = grad_y.size // (C*Oh*Ow)           # B = grad_y.shape[0] = len(grad_y)
+        grad_y = grad_y.reshape(B, C, Oh, Ow)  # ドロップアウトへの入力形状は順伝播時と同じ
         if self.DO:
-            self.grad_y = self.DO.backward(self.grad_y)  # ドロップアウト
-        pdh = Ih*pool_h - Oh - pad                   # 画像サイズの端数を調整
-        pdw = Iw*pool_w - Ow - pad                   # 画像サイズの端数を調整
+            grad_y = self.DO.backward(grad_y)  # ドロップアウト
+        pdh = Ih*pool_h - Oh - pad             # 画像サイズの端数を調整
+        pdw = Iw*pool_w - Ow - pad             # 画像サイズの端数を調整
         # 画像調整            B      C     Ih上　Ih下   Iw左 Iw右　ゼロパディング   
         grad_y = np.pad(grad_y, [(0,0), (0,0), (pad, pdh), (pad, pdw)], 'constant')
         grad_x, _ = self.pooling(grad_y)
@@ -1758,6 +1764,7 @@ class UnPooling2d:
 ### globalAveragePooling層 ####################################################
 class GlobalAveragePooling:
     def __init__(self, *args, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.config = None
         print('Initialize', self.__class__.__name__)
         self.DO = Dropout() if kwargs.pop('dropout', False) else None
@@ -1784,6 +1791,7 @@ class Interpolate2d:
 
     def __init__(self, scale_factor=None, size=None,
                  mode="nearest", align="legacy"):
+        pass  # Function.__init__ is not needed in ufiesia
 
         if scale_factor is None and size is None:
             raise ValueError(
@@ -2292,6 +2300,7 @@ class LatentSampling:
                  vectorize=True,   # Trueなら入力を(B, -1)に潰して扱う
                  mode='sum', free_bits=None,
                  **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__)
 
         self.sampling = MuVarSampling()
@@ -2362,7 +2371,7 @@ class LatentSampling:
 
         if self.mil:
             gz0, gmu0, glog_var0 = self.mil.backward(gmi * self.r_mil)
-            gz += gz0
+            gz = gz + gz0
             gmu += gmu0
             glog_var += glog_var0
 
@@ -2391,6 +2400,7 @@ class LatentSampling_bkup:
                  axis=-1, # mu,log_varの分割軸
                  mode='sum', free_bits=None, # KLDのモード
                  **kwargs):# kwargsは他の層に対する指定を無視するために必要
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__)
         self.sampling = MuVarSampling()             # サンプリングの関数
         self.rate = rate                            # サンプリングの広がり
@@ -2441,7 +2451,7 @@ class LatentSampling_bkup:
 
         if self.mil:
             gz0, gmu0, glog_var0 = self.mil.backward(gmi * self.r_mil)
-            gz += gz0
+            gz = gz + gz0
             gmu += gmu0
             glog_var += glog_var0
 
@@ -2533,6 +2543,7 @@ class KullbackLeiblerDivergenceNormal:
     """
 
     def __init__(self, mode='sum', free_bits=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.mode = mode
         self.free_bits = free_bits
 
@@ -2685,9 +2696,10 @@ class LatentLayer:
         z = self.sampling.forward(y, epsilon=epsilon)
         return z # (z, kll, mil)の場合もある
        
-    def backward(self, gz=1, gkll=1, gmil=1, flush=True):
-        grad_y = self.sampling.backward(gz, gkll=gkll, gmil=gmil)
+    def backward(self, gz=1, gkll=1, gmi=1, flush=True):
+        grad_y = self.sampling.backward(gz, gkll=gkll, gmi=gmi)
         grad_x = self.proj.backward(grad_y, flush=flush)
+        return grad_x
 
     def update(self, eta=0.001, **kwargs):
         self.proj.update(eta=eta, **kwargs)
@@ -2793,6 +2805,7 @@ class RnnBaseLayer:
 
     """
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.cell = None
         stateful = False
         if len(configuration) == 3:
@@ -3257,6 +3270,7 @@ class ParametersForEmbedding:
 # m:vocab_size(語彙数)、n:wordvec_size(語ベクトル長)
 class Embedding:
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         if len(configuration) == 2:
             m, n = configuration
         if len(configuration) == 1:
@@ -3300,9 +3314,8 @@ class Embedding:
 
     def backward(self, gy):
         x = self.x
-        if self.mask is not None:
-            gy *= self.mask
-        self.parameters.set_gradient(x, gy)
+        gx = gy if self.mask is None else gy * self.mask
+        self.parameters.set_gradient(x, gx)
             
         
 #### 位置符号化 ####################################################　   
@@ -3456,6 +3469,7 @@ class PatchEmbedding(Conv2dLayer):
 
 class PatchEmbeddingSimple:
     def __init__(self, dimensionality=128, patch_size=2, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.patch_size = patch_size
         self.linear = LinearLayer(dimensionality, matmul=True, **kwargs)
        
@@ -3498,6 +3512,7 @@ class PatchEmbeddingSimple:
 
 class Unpatchfy:
     def __init__(self, img_size=None, patch_size=2, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.config = img_size, patch_size
         # linearのconfigは遅延設定だが、img_sizeとpatch_sizeを与えれば決まる        
         self.linear = LinearLayer(None, matmul=True, **kwargs)
@@ -3565,6 +3580,7 @@ class Unpatchfy:
 class AttentionUnit_bkup:
     """ 汎用AttentionUnit(MultiHead対応) """
     def __init__(self, head=1, **kwargs): 
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__, 'head =', head, kwargs)
         self.head = head
         causality   = kwargs.pop('causality',  False)     # 時系列の前後関係 
@@ -3677,6 +3693,7 @@ class AttentionUnit_bkup:
 class AttentionUnit:
     """ 汎用AttentionUnit(MultiHead対応) """
     def __init__(self, head=1, **kwargs): 
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__, 'head =', head, kwargs)
         self.head = head
         causality   = kwargs.pop('causality',  False)     # 時系列の前後関係 
@@ -3730,7 +3747,6 @@ class AttentionUnit:
                            + self.__class__.__name__)
        
         a = self.softmax.forward(a)
-        self.softmax.inputs = None     # backwardに不要なscoreへの参照を破棄
         
         if self.regularizer is not None: 
             self.loss = self.regularizer.forward(a)
@@ -3996,6 +4012,7 @@ class SimpleAttentionLayer:
 
     """
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.unit = AttentionUnit()
         print('Initialize', self.__class__.__name__)
         
@@ -4012,6 +4029,7 @@ class SelfAttention:
     def __init__(self, emb_dim=None, head_dim=None, n_head=1,
                  #scale=True, temperature=1.0, entropy_decay=True,
                  **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         if emb_dim is not None and head_dim is None:
             head_dim = emb_dim // n_head
         self.config = emb_dim, head_dim, n_head
@@ -4098,6 +4116,7 @@ class MultiHeadSelfAttention2:
     """ 先にhead分割し、各SingleAttentionに配る """
     def __init__(self, emb_dim=None, head_dim=None, n_head=1,
                  scale=True, temperature=1.0, optimize='Adam', **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         if emb_dim is not None and head_dim is None:
             head_dim = emb_dim // n_head
         else:
@@ -4196,6 +4215,7 @@ class MultiHeadSelfAttention2:
 class SpatialSelfAttention:
     """ 画像データを処理するAttention機構 """
     def __init__(self, n_head=1, scale=1.0, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.attention = SelfAttention(n_head=n_head, **kwargs)
         self.scale = scale
 
@@ -4284,6 +4304,7 @@ class ContextualSelfAttention:
     """
     def __init__(self, *configuration, n_head=1,
                  linear_v=False, linear_k=False, q_shape=(1,1,-1), **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         if len(configuration) == 2:
             m, n = configuration
         if len(configuration) == 1:
@@ -4375,6 +4396,7 @@ class ContextualSelfAttention_bkup:
          
     """
     def __init__(self, *configuration, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         if len(configuration) == 2:
             m, n = configuration
         if len(configuration) == 1:
@@ -4686,6 +4708,7 @@ class ContextualSelfAttentionZ4(ContextualSelfAttention):
 class Dropout:
     """ inverted_dropout """ 
     def __init__(self, preset=None, inplace=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.preset = preset
         self.dropout_mx = None          # はじめて伝播する際に必要
         self.dropout_ratio = None       # 直前のforwardで実際に使ったdropout率
@@ -4721,6 +4744,7 @@ class Dropout:
 class Dropout2:
     """ direct_dropout """
     def __init__(self, preset=None, inplace=False):
+        pass  # Function.__init__ is not needed in ufiesia
         self.preset = preset
         self.dropout_mx = None          # はじめて伝播する際に必要
         self.dropout_ratio = None       # 最後に学習時に使ったdropout率
@@ -4782,6 +4806,7 @@ class Capture:
         self.config = None, None, width
         if width is None:
             return x
+        pass  # Function.__init__ is not needed in ufiesia
         #print('Capture', x.shape, 'width', width, end='|')
         if   x.ndim==3:
             B, Tf, m = x.shape
@@ -4846,6 +4871,7 @@ class Normalization:
     """ 平均0標準偏差1にする標準化(正規化の一種) """
     def __init__(self, axis=None, ppl=False, eps=1e-12,
                  mask_enable=False, inplace=False, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         #print('Initialize', self.__class__.__name__, axis, ppl)#, kwargs)
         self.axis = axis
         self.ppl = ppl
@@ -4977,6 +5003,7 @@ class Normalization:
 #### スケーリングとバイアスを適用するクラス ###############################
 class ScaleAndBias:
     def __init__(self, axis=None, exclude=False, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         #print('Initialize', self.__class__.__name__, axis, exclude)#, kwargs)
         self.axis = axis
         self.remain_axis = None
@@ -5022,6 +5049,7 @@ class ScaleAndBias:
 #### スカラ値によるスケーリングを適用するクラス ###############################
 class ScalarScale:
     def __init__(self, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         optimize = kwargs.pop('optimize',     'SGD')       # 勾配降下法
         self.OFg = cf.eval_in_module(optimize, Optimizers) # 最適化関数
         self.gamma = None
@@ -5047,6 +5075,7 @@ class ScalarScale:
 
 class FixedScale:
     def __init__(self, scale=1.0):
+        pass  # Function.__init__ is not needed in ufiesia
         self.scale = scale
 
     def forward(self, x):
@@ -5060,6 +5089,7 @@ class GeneralNormalizationBase:
     def __init__(self, axis=None, ppl=False, scale_and_bias=False, exclude=False,
                  eps=1e-12, inplace=False, 
                  **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.ppl = ppl
         self.sb = scale_and_bias     
         self.axis = axis
@@ -5170,6 +5200,7 @@ class GeneralNormalizationBase:
 class GeneralNormalizationBase2:
     def __init__(self, axis=None, ppl=False, scale_and_bias=False, exclude=False,
                        inplace=False, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         #print('Initialize', self.__class__.__name__)
         self.ppl = ppl
         self.normalization = Normalization(axis=axis, ppl=ppl, inplace=inplace, **kwargs)
@@ -5296,6 +5327,7 @@ class RootMeanSquareNormalization:
     def __init__(self, axis=None, ppl=False, scale_and_bias=False, exclude=False,
                  eps=1e-12, inplace=False, 
                  **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         self.ppl = ppl
         self.sb = scale_and_bias     
         self.axis = axis
@@ -5461,6 +5493,7 @@ class rms_batch_norm_2d(RMSBatchNorm2d):
 #### 層正規化 #####################################################
 class LayerNormalization_bkup:
     def __init__(self, axis=None, ppl=False, scale_and_bias=False, **kwargs):
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__)
         self.ppl = ppl
         self.normalization = Normalization(axis, ppl, **kwargs)
@@ -5496,6 +5529,7 @@ class LayerNormalization_bkup:
 #### バッチノーマライゼーションの関数 ###############################
 class batch_normalization2:
     def __init__(self, *n):
+        pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__)   
         self.OFg = cf.eval_in_module('AdaGrad', Optimizers) # 最適化関数
         self.OFb = cf.eval_in_module('AdaGrad', Optimizers) # 最適化関数
@@ -5561,6 +5595,7 @@ class batch_normalization2:
 #### L2ノーマライゼーションの関数 ###############################
 class L2Normalize:
     def __init__(self, axis=None):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis = axis
         self.config = None
     
@@ -5589,6 +5624,7 @@ class L2Normalize:
 ### 平坦化 #####################################################
 class Flatten:
     def __init__(self):
+        pass  # Function.__init__ is not needed in ufiesia
         print("Functionsに定義されたものを使ってください")
         self.config = None
 
@@ -5605,6 +5641,7 @@ class Flatten:
 ### 平均 #######################################################
 class Mean:
     def __init__(self, axis=None, keepdims=False):
+        pass  # Function.__init__ is not needed in ufiesia
         print("Functionsに定義されたものを使ってください")
         self.axis = axis
         self.keepdims=keepdims

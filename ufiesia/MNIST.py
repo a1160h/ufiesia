@@ -5,7 +5,6 @@ from struct import *
 import os, time
 import matplotlib.pyplot as plt
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 
 path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../MNIST/')) + os.sep

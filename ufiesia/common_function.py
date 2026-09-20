@@ -2,7 +2,6 @@
 # 20260823 A.Inoue 
 
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Neuron as neuron
 from ufiesia import LossFunctions as lf
 import struct

@@ -1,7 +1,6 @@
 # RNN
 # 2026.04.17 A.Inoue
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Neuron as neuron, Functions as f
 from ufiesia import LossFunctions
 from ufiesia import common_function as cf

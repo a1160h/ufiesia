@@ -2,7 +2,6 @@
 # 20260806 A.Inoue
 
 from ufiesia.Config import *
-np = Config.np
 #set_derivative(True)
 from ufiesia import stems_blocks_heads as sbh
 from ufiesia import skeletons 

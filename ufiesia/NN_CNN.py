@@ -1,7 +1,6 @@
 # NN_CNN
 # 20260607 A.Inoue　
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import Neuron as neuron
 from ufiesia import LossFunctions #as lf
 from ufiesia import common_function as cf

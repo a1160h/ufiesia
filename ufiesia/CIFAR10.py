@@ -1,5 +1,4 @@
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 print(np.__name__, 'is running in', __file__, np.random.rand(1))    
 import matplotlib.pyplot as plt

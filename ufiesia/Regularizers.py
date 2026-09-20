@@ -1,7 +1,6 @@
 # Regularizers
 # 20260911 A.Inoue
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 from ufiesia import LossFunctions as lf
 from ufiesia import Functions as F
@@ -11,6 +10,7 @@ import itertools
 
 class EntropyUnit:
     def __init__(self, eps=1e-9):
+        pass  # Function.__init__ is not needed in ufiesia
         self.eps = eps
 
     def forward(self, p):
@@ -30,6 +30,7 @@ class EntropyUnit:
 
 class KLDivergenceUnit:
     def __init__(self, eps=1e-9):
+        pass  # Function.__init__ is not needed in ufiesia
         self.eps = eps
 
     def forward(self, p, q):
@@ -51,6 +52,7 @@ class KLDivergenceUnit:
 
 class SymmetricKLDivergenceUnit:
     def __init__(self, eps=1e-9):
+        pass  # Function.__init__ is not needed in ufiesia
         self.eps = eps
 
     def forward(self, p, q):
@@ -72,6 +74,7 @@ class SymmetricKLDivergenceUnit:
 
 class JSDivergenceUnit:
     def __init__(self, log_base='e', eps=1e-9):
+        pass  # Function.__init__ is not needed in ufiesia
         self.log = np.log if log_base=='e' else np.log2
         self.eps = eps
 
@@ -98,6 +101,7 @@ class JSDivergenceUnit:
 class EntropyDivergence:
     """ エントロピーの平均の隔たり """
     def __init__(self, axis1=-1, axis2=(0,2), keepdims=True, eps=1e-9):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis1 = axis1
         axis1 = (axis1,) if type(axis1) is not tuple else axis1 # 統計量算出軸
         if axis2 is None:
@@ -124,6 +128,7 @@ class EntropyDivergence:
 class EntropyDivergence2:
     """ エントロピーの平均の隔たり """
     def __init__(self, axis1=-1, axis2=0, axis3=None, keepdims=True, eps=1e-9):
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis1 = axis1
         axis1 = (axis1,) if type(axis1) is not tuple else axis1 # 統計量算出軸
         if axis2 is None:
@@ -212,6 +217,7 @@ class PairDivergence:
                  axis0=1, axis1=-1, axis2=(0,2), keepdims=True, flatten=False,
                  log_base='e', eps=1e-9):
         """p: モデルからの出力, q: 目標分布"""
+        pass  # Function.__init__ is not needed in ufiesia
         self.axis0 = axis0
         self.method = method
         self.round_robin = round_robin
@@ -292,6 +298,7 @@ class JSDivergence(PairDivergence):
 class MeanVarDeviation:
     """ 平均と標準偏差をtargetに近づくようにする関数 """
     def __init__(self, mean=2.0, var=0.2, beta1=0, beta2=0, axis=-1):
+        pass  # Function.__init__ is not needed in ufiesia
         self.mean = F.Mean(axis=axis)
         self.var  = F.Var(axis=axis)
         self.loss_func1 = lf.MeanSquaredError()
@@ -320,6 +327,7 @@ class MeanVarDeviation:
 class MeanStdDeviation:
     """ 平均と標準偏差をtargetに近づくようにする関数 """
     def __init__(self, mean=2.0, std=0.2, beta1=0, beta2=0, axis=-1):
+        pass  # Function.__init__ is not needed in ufiesia
         self.mean = F.Mean(axis=axis)
         self.std  = F.Std(axis=axis)
         self.loss_func1 = lf.MeanSquaredError()
@@ -349,6 +357,7 @@ class MeanStdDeviation:
 class PairwiseGap:
     """ 指定する軸のデータの並びの中の各ペアの差分をgapに近づける損失関数 """
     def __init__(self, gap=0.1, beta=1.0, axis=1, method='combination'):
+        pass  # Function.__init__ is not needed in ufiesia
         self.target_gap = gap
         self.beta = beta
         self.axis = axis
@@ -392,6 +401,7 @@ class AttentionRegularizer:
                  eta2=0,
                  eta3=0,
                 ):
+        pass  # Function.__init__ is not needed in ufiesia
 
         settings = [
             (divergence1, regularize1, scheduler1, axis1, eta1),

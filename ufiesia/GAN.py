@@ -1,7 +1,6 @@
 # GAN 各種
 # 2025.10.15 A.Inoue　
 from ufiesia.Config import *
-np = Config.np
 from ufiesia import common_function as cf
 from ufiesia import LossFunctions as lf
 
