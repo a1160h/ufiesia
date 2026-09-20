@@ -2,6 +2,7 @@ class Config:
     np    = None
     dtype = 'f4'
     seed  = None
+    enable_debug_print = False
 
 
 def set_dtype(value):
@@ -38,6 +39,11 @@ def set_np(value=None):
         #np.seterr(over='raise')
 
     setattr(Config, 'np', np)
+
+
+def debug_print(*text, **end):
+    if Config.enable_debug_print:
+        print(*text, end=end.get('end'))
 
 
 set_np()
