@@ -43,7 +43,7 @@ class ActivatorBase:
         pass                          # update()メソッドは何もしない 
 
 class Identity(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         return x 
  
     def backward(self, gy): 
@@ -57,7 +57,7 @@ class Step(ActivatorBase):
         super().__init__()
         self.t = t
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = x > self.t
         return y
 
@@ -68,7 +68,7 @@ def step(x):
     return Step().forward(x)
 
 class Sigmoid(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = 1 / (1 + np.exp(-x))
         self.y = y
         return y
@@ -86,7 +86,7 @@ class SigmoidWithLoss(ActivatorBase):
         super().__init__()
         self.sumup = kwargs.pop('sumup', False)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = 1 / (1 + np.exp(-x))
         self.y = y
         return y
@@ -101,7 +101,7 @@ class SigmoidOut(ActivatorBase):
         print('互換性のために維持、これは使わずに、y - t を外で作ってSigmoidを使用してください。')
         super().__init__()
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = 1 / (1 + np.exp(-x))
         self.y = y
         return y
@@ -112,7 +112,7 @@ class SigmoidOut(ActivatorBase):
         return gx
 
 class Tanh(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = np.tanh(x)
         self.y = y
         return y
@@ -126,7 +126,7 @@ def tanh(x):
     return Tanh().forward(x)
 
 class ReLU(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         y = np.maximum(x, 0)
         return y
@@ -140,7 +140,7 @@ def relu(x):
     return ReLU().forward(x)
 
 class ReLU_bkup(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         y = np.where(x<=0, 0, x)
         return y #.astype(Config.dtype)
@@ -155,7 +155,7 @@ class LReLU(ActivatorBase):
         super().__init__()
         self.c = kwargs.pop('c', 0.01)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         y = np.maximum(x, 0) + np.minimum(x, 0) * self.c
         return y 
@@ -174,7 +174,7 @@ class LReLU_bkup(ActivatorBase):
         super().__init__()
         self.c = kwargs.pop('c', 0.01)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         y = np.where(x <= 0, self.c * x, x)
         return y #.astype(Config.dtype)
@@ -189,7 +189,7 @@ class ELU(ActivatorBase):
         super().__init__()
         self.c = kwargs.pop('c', 1.0)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         y = np.where(x<=0, self.c * (np.exp(x) - 1), x)
         self.y = y
@@ -209,7 +209,7 @@ class Swish(ActivatorBase):
         super().__init__()
         self.beta = kwargs.pop('beta', 1.0)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         beta_x = self.beta * x
         s = 1 / (1 + np.exp(-beta_x)) # sigmoid
@@ -226,7 +226,7 @@ def swish(x, beta=1.0):
     return Swish(beta=beta).forward(x)
 
 class Softplus(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         y = np.log(1 + np.exp(x))
         return y
@@ -240,7 +240,7 @@ def softplus(x):
     return Softplus().forward(x)
     
 class Mish(ActivatorBase):
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         ts = np.tanh(np.log(1 + np.exp(x)))
         y = x * ts
@@ -266,7 +266,7 @@ class GELU(ActivatorBase):
         self.c = np.array(np.sqrt(2.0 / np.pi), dtype=Config.dtype)   # √(2/π)
         self.inv_sqrt2 = np.array(1.0 / np.sqrt(2.0), dtype=Config.dtype)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         z = _erf(x * self.inv_sqrt2)
         y = 0.5 * x * (1.0 + z)
@@ -295,7 +295,7 @@ class GELUap(ActivatorBase):
         self.c = np.array(np.sqrt(2.0 / np.pi), dtype=Config.dtype)   # √(2/π)
         self.k = np.array(0.044715, dtype=Config.dtype)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         self.x = x
         u = self.c * (x + self.k * x**3)
         t = np.tanh(u)
@@ -319,7 +319,7 @@ class Softmax(ActivatorBase):
         super().__init__()
         self.temperature = temperature
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         x = x / self.temperature   # 温度スケーリング
         max_x = np.max(x, axis=-1, keepdims=True) #if dimx>1 else np.max(x)
         exp_a = np.exp(x - max_x)  # オーバーフロー対策
@@ -344,7 +344,7 @@ class Softmax2(ActivatorBase):
         super().__init__()
         self.temperature = temperature
     
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         """Softmaxの順伝播"""
         x = x / self.temperature  # 温度スケーリング
         x_exp = np.exp(x - np.max(x, axis=-1, keepdims=True))  # オーバーフロー防止
@@ -427,7 +427,7 @@ class SoftmaxWithLoss(ActivatorBase):
         super().__init__()
         self.sumup = kwargs.pop('sumup', False)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = x - x.max(axis=-1, keepdims=True)
         y = np.exp(y)
         y /= np.sum(y, axis=-1, keepdims=True)
@@ -456,7 +456,7 @@ class SoftmaxWithLossMasked(ActivatorBase):
         self.ignore_label = kwargs.pop('ignore',    -1)
         self.sumup        = kwargs.pop('sumup',  False)
         
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         y = x - x.max(axis=-1, keepdims=True)
         y = np.exp(y)
         y /= np.sum(y, axis=-1, keepdims=True)
@@ -488,7 +488,7 @@ class SoftmaxWithLoss2(ActivatorBase):
         super().__init__()
         self.sumup   = kwargs.pop('sumup', False)
 
-    def forward(self, x):
+    def forward(self, x, **kwargs):
         #dimx = x.ndim
         max_x = np.max(x, axis=-1, keepdims=True) #if dimx>1 else np.max(x)
         exp_a = np.exp(x - max_x)  # オーバーフロー対策
