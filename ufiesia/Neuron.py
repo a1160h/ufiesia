@@ -1,5 +1,5 @@
 # Neuron
-# 20260920 A.Inoue
+# 20260921 A.Inoue
 
 import copy
 import warnings
@@ -19,7 +19,7 @@ class Sequential:
         self.layers = [layer for layer in layers]
         self.error_layer = None
         self.outputshape = {}
-        print(self.layers)
+        #print(self.layers)
 
     def forward(self, *x, **kwargs):
         layer = self.layers[0]
@@ -79,7 +79,7 @@ class SequentialWithLoss:
                             f"but {type(layers[-1]).__name__}")
         self.error_layer = None
         self.outputshape = {}
-        print(self.layers)
+        #print(self.layers)
 
     def forward(self, *x, **kwargs):
         # x には通常入力・res接続・正解値が位置引数として渡されることがある。
