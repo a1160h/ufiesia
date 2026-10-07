@@ -38,7 +38,7 @@ class FeedForward:
     def __init__(self, emb_dim=None, intermediate=None, expansion=4,
                  activate='Mish', **kwargs):
         pass  # Function.__init__ is not needed in ufiesia
-        self.config = emb_dim, intermediate, int(expansion)
+        self.config = emb_dim, intermediate, expansion
         self.linear_i = nn.LinearLayer(matmul=True, **kwargs)
         self.linear_o = nn.LinearLayer(matmul=True, **kwargs)
         if emb_dim is not None and intermediate is not None:
@@ -55,7 +55,7 @@ class FeedForward:
             raise Exception(
                 'Data shape mismatch with configuration.', self.__class__.__name__)
         if intermediate is None:
-            intermediate = emb_dim * expansion
+            intermediate = int(emb_dim * expansion)
         self.config = emb_dim, intermediate, expansion
         self.linear_i.config = emb_dim, intermediate
         self.linear_o.config = intermediate, emb_dim
@@ -90,7 +90,7 @@ class SwiGLU:
 
     def __init__(self, emb_dim=None, intermediate=None, expansion=4, **kwargs):
         pass  # Function.__init__ is not needed in ufiesia
-        self.config = emb_dim, intermediate, int(expansion)
+        self.config = emb_dim, intermediate, expansion
         kwargs.setdefault('optimize', 'AdamT')
         print('Initialize', self.__class__.__name__, self.config, kwargs)
         self.linear_g = nn.LinearLayer(matmul=True, bias=False, **kwargs)
@@ -111,7 +111,7 @@ class SwiGLU:
             raise Exception('Data shape mismatch with configuration.',
                             self.__class__.__name__)
         if intermediate is None:
-            intermediate = emb_dim * expansion
+            intermediate = int(emb_dim * expansion)
         self.config = emb_dim, intermediate, expansion
         self.linear_g.config = emb_dim, intermediate
         self.linear_i.config = emb_dim, intermediate
