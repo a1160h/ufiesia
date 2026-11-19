@@ -1,5 +1,5 @@
 # Activators
-# 2026.09.20 A.Inoue
+# 2026.11.20 A.Inoue
 
 from ufiesia.Config import *
 
@@ -324,7 +324,7 @@ class Softmax(ActivatorBase):
         max_x = np.max(x, axis=-1, keepdims=True) #if dimx>1 else np.max(x)
         exp_a = np.exp(x - max_x)  # オーバーフロー対策
         sum_exp_a = np.sum(exp_a, axis=-1, keepdims=True) #if dimx>1 else np.sum(exp_a) 
-        y = exp_a / (sum_exp_a + 1e-7)
+        y = exp_a / sum_exp_a      # 0除算はオーバーフロー対策により不要
         self.y = y
         return y
 
