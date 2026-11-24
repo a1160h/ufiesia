@@ -1,5 +1,5 @@
 # Activators
-# 2026.11.20 A.Inoue
+# 2026.11.24 A.Inoue
 
 from ufiesia.Config import *
 
@@ -38,6 +38,9 @@ class ActivatorBase:
     def __init__(self, **kwargs):
         pass  # Function.__init__ is not needed in ufiesia
 
+
+    def backward(self, *gys, **kwargs):
+        return super().backward(*gys)  # kwargsは無視する
     
     def update(self, *args, **kwargs): 
         pass                          # update()メソッドは何もしない 
