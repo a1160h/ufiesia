@@ -3787,7 +3787,7 @@ class ParametersForEmbedding:
     def set_gradient(self, x, gy, flush=True): 
         if flush: # flush==Falseの場合には初回は明示的にflush_gradient()が必要
             self.flush_gradient()
-        self.accum += 1
+        self.n_accum += 1
         np.add.at(self.grad_w, x, gy)
 
     def flush_gradient(self):
@@ -5187,12 +5187,12 @@ class SpatialSelfAttention:
         y = np.reshape(y, (B, C, H, W))
         return x + self.scale * y
 
-    def backward(self, gy):
+    def backward(self, gy, flush=True):
         B, C, H, W = gy.shape
         gx = self.scale * gy           
         gx = np.reshape(gx, (B, C, H*W))
         gx = np.transpose(gx, (0, 2, 1))  
-        gx = self.attention.backward(gx)
+        gx = self.attention.backward(gx, flush=flush)
         gx = np.transpose(gx, (0, 2, 1))
         gx = np.reshape(gx, (B, C, H, W))
         gx += gy
