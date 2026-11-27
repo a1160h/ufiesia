@@ -1,5 +1,5 @@
 # Neuron
-# 20261125 A.Inoue
+# 20261127 A.Inoue
 
 import copy
 import warnings
@@ -4372,7 +4372,7 @@ class RoPE_bkup:
 # v:入力 value、k:入力 key、q:入力 query、y:出力、a:attention_weight
 # query に一致する key を探して、その key に対応する value を出力する
 # mask:self attentionで時系列を扱う場合に自身より先の時刻を無視するなど
-# scale:コンテクストベクトルが大きい場合にaが大きくなりすぎるのを抑制
+# score_damp:コンテクストベクトルが大きい場合にaが大きくなりすぎるのを抑制
 # 
 class AttentionUnit_bkup:
     """ 汎用AttentionUnit(MultiHead対応) """
@@ -4380,10 +4380,10 @@ class AttentionUnit_bkup:
         pass  # Function.__init__ is not needed in ufiesia
         print('Initialize', self.__class__.__name__, 'head =', head, kwargs)
         self.head = head
-        causality   = kwargs.pop('causality',  False)     # 時系列の前後関係 
-        self.scale  = kwargs.pop('scale',       True)
-        temperature = kwargs.pop('temperature',  1.0)  
-        regularizer = kwargs.pop('regularizer', None)
+        causality   = kwargs.pop('causality',     False)     # 時系列の前後関係 
+        self.score_damp = kwargs.pop('score_damp', True)
+        temperature = kwargs.pop('temperature',     1.0)  
+        regularizer = kwargs.pop('regularizer',    None)
        
         if type(regularizer) == str:
             self.regularizer = cf.eval_in_module(regularizer, Regularizers)
@@ -4411,7 +4411,7 @@ class AttentionUnit_bkup:
         k = k.reshape(B,Tk,h,H).transpose(0,2,1,3) # (B,Tk,C)->(B,h,Tk,H)
         q = q.reshape(B,Tq,h,H).transpose(0,2,1,3) # (B,Tq,C)->(B,h,Tq,H)
         a = np.matmul(q, k.transpose(0,1,3,2))     # (B,h,Tq,H)@(B,h,H,Tk)->(B,h,Tq,Tk)
-        if self.scale:
+        if self.score_damp:
             a *= np.array(H ** -0.5, dtype=a.dtype)
 
         if self.causality: # 時間の前後関係の保証
@@ -4476,7 +4476,7 @@ class AttentionUnit_bkup:
             ga.transpose(0,3,1,2)[self.mask==False,:,:] = 0
         if self.causality:    
             ga[:,:,self.tril==False] = 0
-        if self.scale:
+        if self.score_damp:
             ga *= np.array(H ** -0.5, dtype=ga.dtype)
 
         gq = np.matmul(ga, k)                      # (B,h,Tq,Tk)@(B,h,Tk,H)->(B,h,Tq,H)
@@ -4507,7 +4507,7 @@ class AttentionUnit:
         rope        = kwargs.pop('rope',              False) # Rotary Positional Embedding
         rope_base   = kwargs.pop('rope_base',       10000.0)
         rope_mode   = kwargs.pop('rope_mode', 'interleaved')
-        self.scale  = kwargs.pop('scale',              True)
+        self.score_damp = kwargs.pop('score_damp',     True)
         temperature = kwargs.pop('temperature',         1.0)  
         regularizer = kwargs.pop('regularizer',        None)
        
@@ -4557,7 +4557,7 @@ class AttentionUnit:
             q.reshape(B,hk,hq//hk,Tq,Hq), k.transpose(0,1,3,2)[:,:,None,:,:])
         a = a.reshape(B,hq,Tq,Tk)   # (B,hk,hq//hk,Tq,Tk)->(B,hq,Tq,Tk)
 
-        if self.scale:
+        if self.score_damp: 
             a *= np.array(Hk ** -0.5, dtype=a.dtype) # Hk==Hq
 
         if self.causality: # 時間の前後関係の保証
@@ -4636,7 +4636,7 @@ class AttentionUnit:
             ga *= self.mask
         if self.causality:    
             ga *= self.tril
-        if self.scale:
+        if self.score_damp:
             ga *= np.array(Hk ** -0.5, dtype=ga.dtype)
 
         gq = np.matmul(ga.reshape(B,hk,hq//hk,Tq,Tk), k[:,:,None,:,:])
@@ -4753,7 +4753,7 @@ class QueryChunkAttentionUnit(AttentionUnit):
             a_chunk = np.matmul(q[:,:,:,i:j,:], kt)
             a_chunk = a_chunk.reshape(B,hq,j-i,Tk)
 
-            if self.scale:
+            if self.score_damp:
                 a_chunk *= invrootH
 
             if self.causality:
@@ -4835,7 +4835,7 @@ class QueryChunkAttentionUnit(AttentionUnit):
             a_chunk = np.matmul(q.reshape(B,hk,hq//hk,Tq,Hq)[:,:,:,i:j,:], kt)
             a_chunk = a_chunk.reshape(B,hq,j-i,Tk)
 
-            if self.scale:
+            if self.score_damp:
                 a_chunk *= invrootH
 
             if self.causality:
@@ -4874,12 +4874,12 @@ class QueryChunkAttentionUnit(AttentionUnit):
 
             ga_chunk = self.softmax.backward(ga_chunk, a_soft_chunk)
 
-            # maskとcausalityとscale
+            # maskとcausalityとscore_damp
             if self.mask is not None:
                 ga_chunk *= self.mask
             if self.causality:
                 ga_chunk *= tril_chunk
-            if self.scale:
+            if self.score_damp:
                 ga_chunk *= invrootH
 
             gq_chunk = np.matmul(ga_chunk.reshape(B,hk,hq//hk,j-i,Tk), k[:,:,None,:,:])
